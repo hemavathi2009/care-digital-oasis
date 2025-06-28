@@ -1,5 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Calendar, 
@@ -15,91 +17,123 @@ import {
   Eye,
   Settings
 } from 'lucide-react';
+import { 
+  collection, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  query, 
+  orderBy,
+  onSnapshot 
+} from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import Card from '../../components/atoms/Card';
 import Button from '../../components/atoms/Button';
 import Badge from '../../components/atoms/Badge';
+import { toast } from 'sonner';
 
 const AdminDashboard = () => {
+  const { currentUser, userRole, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [appointments, setAppointments] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    { icon: Users, label: 'Total Patients', value: '2,453', change: '+12%', color: 'text-blue-600' },
-    { icon: Calendar, label: 'Appointments Today', value: '47', change: '+8%', color: 'text-green-600' },
-    { icon: UserCheck, label: 'Active Doctors', value: '24', change: '+2%', color: 'text-purple-600' },
-    { icon: Activity, label: 'Emergency Cases', value: '12', change: '-15%', color: 'text-red-600' }
-  ];
-
-  const recentAppointments = [
-    {
-      id: '1',
-      patient: 'John Doe',
-      doctor: 'Dr. Sarah Johnson',
-      time: '09:00 AM',
-      type: 'Cardiology',
-      status: 'confirmed'
-    },
-    {
-      id: '2',
-      patient: 'Jane Smith',
-      doctor: 'Dr. Michael Chen',
-      time: '10:30 AM',
-      type: 'Neurology',
-      status: 'pending'
-    },
-    {
-      id: '3',
-      patient: 'Bob Wilson',
-      doctor: 'Dr. Emily Davis',
-      time: '02:15 PM',
-      type: 'Ophthalmology',
-      status: 'completed'
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/');
+      return;
     }
-  ];
 
-  const doctors = [
-    {
-      id: '1',
-      name: 'Dr. Sarah Johnson',
-      specialty: 'Cardiology',
-      patients: 156,
-      rating: 4.9,
-      availability: 'Available',
-      image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop&crop=face'
-    },
-    {
-      id: '2',
-      name: 'Dr. Michael Chen',
-      specialty: 'Neurology',
-      patients: 132,
-      rating: 4.8,
-      availability: 'Busy',
-      image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop&crop=face'
+    if (userRole !== 'admin') {
+      toast.error('Access denied. Admin privileges required.');
+      navigate('/');
+      return;
     }
-  ];
 
-  const patients = [
-    {
-      id: '1',
-      name: 'John Doe',
-      age: 45,
-      email: 'john@example.com',
-      phone: '+1 (555) 123-4567',
-      lastVisit: '2024-01-15',
-      status: 'Active'
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      age: 32,
-      email: 'jane@example.com',
-      phone: '+1 (555) 987-6543',
-      lastVisit: '2024-01-10',
-      status: 'Active'
+    fetchData();
+  }, [currentUser, userRole, navigate]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch appointments
+      const appointmentsRef = collection(db, 'appointments');
+      const appointmentsQuery = query(appointmentsRef, orderBy('createdAt', 'desc'));
+      const appointmentsSnapshot = await getDocs(appointmentsQuery);
+      const appointmentsData = appointmentsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setAppointments(appointmentsData);
+
+      // Fetch contacts
+      const contactsRef = collection(db, 'contacts');
+      const contactsQuery = query(contactsRef, orderBy('createdAt', 'desc'));
+      const contactsSnapshot = await getDocs(contactsQuery);
+      const contactsData = contactsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setContacts(contactsData);
+
+      console.log('Admin data loaded:', { appointments: appointmentsData.length, contacts: contactsData.length });
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      toast.error('Failed to load admin data');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const updateAppointmentStatus = async (appointmentId, newStatus) => {
+    try {
+      const appointmentRef = doc(db, 'appointments', appointmentId);
+      await updateDoc(appointmentRef, {
+        status: newStatus,
+        updatedAt: new Date()
+      });
+      
+      // Update local state
+      setAppointments(prev => prev.map(apt => 
+        apt.id === appointmentId ? { ...apt, status: newStatus } : apt
+      ));
+      
+      toast.success(`Appointment ${newStatus} successfully`);
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      toast.error('Failed to update appointment');
+    }
+  };
+
+  const deleteAppointment = async (appointmentId) => {
+    try {
+      await deleteDoc(doc(db, 'appointments', appointmentId));
+      setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
+      toast.success('Appointment deleted successfully');
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+      toast.error('Failed to delete appointment');
+    }
+  };
+
+  const deleteContact = async (contactId) => {
+    try {
+      await deleteDoc(doc(db, 'contacts', contactId));
+      setContacts(prev => prev.filter(contact => contact.id !== contactId));
+      toast.success('Contact deleted successfully');
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      toast.error('Failed to delete contact');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
       case 'confirmed': return 'success';
       case 'pending': return 'warning';
       case 'completed': return 'info';
@@ -107,6 +141,49 @@ const AdminDashboard = () => {
       default: return 'primary';
     }
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return dateString;
+    }
+  };
+
+  const stats = [
+    { 
+      icon: Users, 
+      label: 'Total Appointments', 
+      value: appointments.length.toString(), 
+      change: '+' + Math.floor(appointments.length * 0.1) + '%', 
+      color: 'text-blue-600' 
+    },
+    { 
+      icon: Calendar, 
+      label: 'Pending Appointments', 
+      value: appointments.filter(apt => apt.status === 'pending').length.toString(), 
+      change: '+' + Math.floor(appointments.filter(apt => apt.status === 'pending').length * 0.05) + '%', 
+      color: 'text-green-600' 
+    },
+    { 
+      icon: UserCheck, 
+      label: 'Completed Today', 
+      value: appointments.filter(apt => 
+        apt.status === 'completed' && 
+        apt.date === new Date().toISOString().split('T')[0]
+      ).length.toString(), 
+      change: '+' + Math.floor(appointments.filter(apt => apt.status === 'completed').length * 0.02) + '%', 
+      color: 'text-purple-600' 
+    },
+    { 
+      icon: Activity, 
+      label: 'Contact Messages', 
+      value: contacts.length.toString(), 
+      change: '+' + Math.floor(contacts.length * 0.15) + '%', 
+      color: 'text-red-600' 
+    }
+  ];
 
   const renderOverview = () => (
     <div className="space-y-8">
@@ -135,40 +212,37 @@ const AdminDashboard = () => {
         <Card premium className="p-6">
           <h3 className="text-xl font-semibold text-foreground mb-6">Recent Appointments</h3>
           <div className="space-y-4">
-            {recentAppointments.map((appointment) => (
+            {appointments.slice(0, 5).map((appointment) => (
               <div key={appointment.id} className="flex items-center justify-between p-4 border border-border rounded-xl">
                 <div className="flex-1">
-                  <h4 className="font-medium text-foreground">{appointment.patient}</h4>
-                  <p className="text-sm text-muted-foreground">{appointment.doctor} • {appointment.type}</p>
-                  <p className="text-sm text-muted-foreground">{appointment.time}</p>
+                  <h4 className="font-medium text-foreground">{appointment.firstName} {appointment.lastName}</h4>
+                  <p className="text-sm text-muted-foreground">{appointment.doctor} • {appointment.department}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(appointment.date)} • {appointment.time}</p>
                 </div>
                 <Badge variant={getStatusColor(appointment.status)} size="sm">
-                  {appointment.status}
+                  {appointment.status || 'pending'}
                 </Badge>
               </div>
             ))}
+            {appointments.length === 0 && (
+              <p className="text-muted-foreground text-center py-4">No appointments yet</p>
+            )}
           </div>
         </Card>
 
         <Card premium className="p-6">
-          <h3 className="text-xl font-semibold text-foreground mb-6">Quick Actions</h3>
+          <h3 className="text-xl font-semibold text-foreground mb-6">Recent Contact Messages</h3>
           <div className="space-y-4">
-            <Button variant="primary" size="md" className="w-full justify-start">
-              <Plus className="w-4 h-4 mr-2" />
-              New Appointment
-            </Button>
-            <Button variant="outline" size="md" className="w-full justify-start">
-              <Users className="w-4 h-4 mr-2" />
-              Add Patient
-            </Button>
-            <Button variant="outline" size="md" className="w-full justify-start">
-              <UserCheck className="w-4 h-4 mr-2" />
-              Add Doctor
-            </Button>
-            <Button variant="outline" size="md" className="w-full justify-start">
-              <Settings className="w-4 h-4 mr-2" />
-              System Settings
-            </Button>
+            {contacts.slice(0, 5).map((contact) => (
+              <div key={contact.id} className="p-4 border border-border rounded-xl">
+                <h4 className="font-medium text-foreground">{contact.firstName} {contact.lastName}</h4>
+                <p className="text-sm text-muted-foreground">{contact.subject}</p>
+                <p className="text-sm text-muted-foreground truncate">{contact.message}</p>
+              </div>
+            ))}
+            {contacts.length === 0 && (
+              <p className="text-muted-foreground text-center py-4">No contact messages yet</p>
+            )}
           </div>
         </Card>
       </div>
@@ -179,10 +253,6 @@ const AdminDashboard = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-foreground">Appointments Management</h2>
-        <Button variant="primary" size="md">
-          <Plus className="w-4 h-4 mr-2" />
-          New Appointment
-        </Button>
       </div>
 
       <Card premium className="overflow-hidden">
@@ -193,32 +263,55 @@ const AdminDashboard = () => {
                 <th className="text-left p-4 font-medium text-foreground">Patient</th>
                 <th className="text-left p-4 font-medium text-foreground">Doctor</th>
                 <th className="text-left p-4 font-medium text-foreground">Date & Time</th>
-                <th className="text-left p-4 font-medium text-foreground">Type</th>
+                <th className="text-left p-4 font-medium text-foreground">Department</th>
                 <th className="text-left p-4 font-medium text-foreground">Status</th>
                 <th className="text-left p-4 font-medium text-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {recentAppointments.map((appointment) => (
+              {appointments.map((appointment) => (
                 <tr key={appointment.id} className="border-t border-border">
-                  <td className="p-4 text-foreground">{appointment.patient}</td>
+                  <td className="p-4">
+                    <div>
+                      <p className="text-foreground font-medium">{appointment.firstName} {appointment.lastName}</p>
+                      <p className="text-sm text-muted-foreground">{appointment.email}</p>
+                      <p className="text-sm text-muted-foreground">{appointment.phone}</p>
+                    </div>
+                  </td>
                   <td className="p-4 text-foreground">{appointment.doctor}</td>
-                  <td className="p-4 text-muted-foreground">{appointment.time}</td>
-                  <td className="p-4 text-muted-foreground">{appointment.type}</td>
+                  <td className="p-4 text-muted-foreground">
+                    <div>
+                      <p>{formatDate(appointment.date)}</p>
+                      <p>{appointment.time}</p>
+                    </div>
+                  </td>
+                  <td className="p-4 text-muted-foreground">{appointment.department}</td>
                   <td className="p-4">
                     <Badge variant={getStatusColor(appointment.status)} size="sm">
-                      {appointment.status}
+                      {appointment.status || 'pending'}
                     </Badge>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => updateAppointmentStatus(appointment.id, 'confirmed')}
+                      >
+                        Confirm
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="w-4 h-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => updateAppointmentStatus(appointment.id, 'completed')}
+                      >
+                        Complete
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => deleteAppointment(appointment.id)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -227,76 +320,20 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </table>
+          {appointments.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">
+              No appointments found
+            </div>
+          )}
         </div>
       </Card>
     </div>
   );
 
-  const renderDoctors = () => (
+  const renderContacts = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">Doctors Management</h2>
-        <Button variant="primary" size="md">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Doctor
-        </Button>
-      </div>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {doctors.map((doctor) => (
-          <Card key={doctor.id} premium className="p-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <img 
-                src={doctor.image} 
-                alt={doctor.name}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">{doctor.name}</h3>
-                <p className="text-sm text-muted-foreground">{doctor.specialty}</p>
-                <Badge 
-                  variant={doctor.availability === 'Available' ? 'success' : 'warning'} 
-                  size="sm"
-                >
-                  {doctor.availability}
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Patients:</span>
-                <span className="text-foreground font-medium">{doctor.patients}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Rating:</span>
-                <span className="text-foreground font-medium">{doctor.rating}/5.0</span>
-              </div>
-            </div>
-
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm" className="flex-1">
-                <Edit className="w-4 h-4 mr-1" />
-                Edit
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Eye className="w-4 h-4" />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderPatients = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">Patients Management</h2>
-        <Button variant="primary" size="md">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Patient
-        </Button>
+        <h2 className="text-2xl font-bold text-foreground">Contact Messages</h2>
       </div>
 
       <Card premium className="overflow-hidden">
@@ -305,53 +342,50 @@ const AdminDashboard = () => {
             <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-4 font-medium text-foreground">Name</th>
-                <th className="text-left p-4 font-medium text-foreground">Age</th>
                 <th className="text-left p-4 font-medium text-foreground">Contact</th>
-                <th className="text-left p-4 font-medium text-foreground">Last Visit</th>
-                <th className="text-left p-4 font-medium text-foreground">Status</th>
+                <th className="text-left p-4 font-medium text-foreground">Subject</th>
+                <th className="text-left p-4 font-medium text-foreground">Message</th>
+                <th className="text-left p-4 font-medium text-foreground">Date</th>
                 <th className="text-left p-4 font-medium text-foreground">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {patients.map((patient) => (
-                <tr key={patient.id} className="border-t border-border">
-                  <td className="p-4 text-foreground font-medium">{patient.name}</td>
-                  <td className="p-4 text-muted-foreground">{patient.age}</td>
+              {contacts.map((contact) => (
+                <tr key={contact.id} className="border-t border-border">
+                  <td className="p-4 text-foreground font-medium">{contact.firstName} {contact.lastName}</td>
                   <td className="p-4">
                     <div className="space-y-1">
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Mail className="w-3 h-3 mr-1" />
-                        {patient.email}
+                        {contact.email}
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Phone className="w-3 h-3 mr-1" />
-                        {patient.phone}
+                        {contact.phone}
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-muted-foreground">{patient.lastVisit}</td>
+                  <td className="p-4 text-muted-foreground">{contact.subject}</td>
+                  <td className="p-4 text-muted-foreground max-w-xs truncate">{contact.message}</td>
+                  <td className="p-4 text-muted-foreground">{formatDate(contact.createdAt?.toDate?.())}</td>
                   <td className="p-4">
-                    <Badge variant="success" size="sm">
-                      {patient.status}
-                    </Badge>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => deleteContact(contact.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {contacts.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">
+              No contact messages found
+            </div>
+          )}
         </div>
       </Card>
     </div>
@@ -360,9 +394,19 @@ const AdminDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Activity },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
-    { id: 'doctors', label: 'Doctors', icon: UserCheck },
-    { id: 'patients', label: 'Patients', icon: Users }
+    { id: 'contacts', label: 'Contacts', icon: Users }
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -375,13 +419,12 @@ const AdminDashboard = () => {
               <p className="text-muted-foreground">Manage your hospital operations</p>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" size="md">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
+              <span className="text-sm text-muted-foreground">
+                Welcome, {currentUser?.email}
+              </span>
+              <Button variant="outline" size="md" onClick={logout}>
+                Logout
               </Button>
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-white text-sm font-medium">A</span>
-              </div>
             </div>
           </div>
         </div>
@@ -414,8 +457,7 @@ const AdminDashboard = () => {
         <main className="flex-1 p-6">
           {activeTab === 'overview' && renderOverview()}
           {activeTab === 'appointments' && renderAppointments()}
-          {activeTab === 'doctors' && renderDoctors()}
-          {activeTab === 'patients' && renderPatients()}
+          {activeTab === 'contacts' && renderContacts()}
         </main>
       </div>
     </div>

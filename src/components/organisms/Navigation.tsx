@@ -2,14 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '../atoms/Button';
-import { Menu, Phone, Calendar, User, Home, Stethoscope, UserCheck, MessageCircle, LogIn } from 'lucide-react';
+import { Menu, Phone, Calendar, User, Home, Stethoscope, UserCheck, MessageCircle, LogIn, Shield } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const Navigation: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, userRole, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,16 +76,29 @@ const Navigation: React.FC = () => {
           <div className="hidden lg:flex items-center space-x-4">
             {currentUser ? (
               <>
-                <Link to="/patient-portal">
-                  <Button
-                    variant={(isScrolled || !isHomePage) ? 'outline' : 'ghost'}
-                    size="md"
-                    className={!(isScrolled || !isHomePage) ? 'text-white border-white hover:bg-white hover:text-primary' : ''}
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Portal
-                  </Button>
-                </Link>
+                {userRole === 'admin' ? (
+                  <Link to="/admin">
+                    <Button
+                      variant={(isScrolled || !isHomePage) ? 'outline' : 'ghost'}
+                      size="md"
+                      className={!(isScrolled || !isHomePage) ? 'text-white border-white hover:bg-white hover:text-primary' : ''}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/patient-portal">
+                    <Button
+                      variant={(isScrolled || !isHomePage) ? 'outline' : 'ghost'}
+                      size="md"
+                      className={!(isScrolled || !isHomePage) ? 'text-white border-white hover:bg-white hover:text-primary' : ''}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Portal
+                    </Button>
+                  </Link>
+                )}
                 <Button
                   variant={(isScrolled || !isHomePage) ? 'primary' : 'accent'}
                   size="md"
@@ -96,6 +109,16 @@ const Navigation: React.FC = () => {
               </>
             ) : (
               <>
+                <Link to="/admin/login">
+                  <Button
+                    variant={(isScrolled || !isHomePage) ? 'ghost' : 'ghost'}
+                    size="sm"
+                    className={!(isScrolled || !isHomePage) ? 'text-white hover:bg-white hover:text-primary' : ''}
+                  >
+                    <Shield className="w-4 h-4 mr-1" />
+                    Admin
+                  </Button>
+                </Link>
                 <Button
                   variant={(isScrolled || !isHomePage) ? 'outline' : 'ghost'}
                   size="md"
@@ -153,18 +176,33 @@ const Navigation: React.FC = () => {
               <div className="pt-4 space-y-3 border-t border-gray-200">
                 {currentUser ? (
                   <>
-                    <Link to="/patient-portal" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="outline" size="md" className="w-full justify-center">
-                        <User className="w-4 h-4 mr-2" />
-                        Patient Portal
-                      </Button>
-                    </Link>
+                    {userRole === 'admin' ? (
+                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button variant="outline" size="md" className="w-full justify-center">
+                          <Shield className="w-4 h-4 mr-2" />
+                          Admin Dashboard
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link to="/patient-portal" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button variant="outline" size="md" className="w-full justify-center">
+                          <User className="w-4 h-4 mr-2" />
+                          Patient Portal
+                        </Button>
+                      </Link>
+                    )}
                     <Button variant="primary" size="md" className="w-full justify-center" onClick={logout}>
                       Logout
                     </Button>
                   </>
                 ) : (
                   <>
+                    <Link to="/admin/login" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="ghost" size="md" className="w-full justify-center">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Admin Login
+                      </Button>
+                    </Link>
                     <Button variant="outline" size="md" className="w-full justify-center">
                       <Phone className="w-4 h-4 mr-2" />
                       Call Now
