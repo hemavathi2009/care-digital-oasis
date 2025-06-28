@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navigation from '../components/organisms/Navigation';
 import HeroSection from '../components/organisms/HeroSection';
@@ -266,7 +265,7 @@ const Index = () => {
             </div>
 
             {/* Contact Form */}
-            <Card premium className="p-8 fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <Card premium className="p-8 fade-in-up">
               <h3 className="text-2xl font-semibold text-foreground mb-6">Send us a Message</h3>
               <form className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">

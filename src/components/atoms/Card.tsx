@@ -8,6 +8,7 @@ interface CardProps {
   hover?: boolean;
   premium?: boolean;
   glass?: boolean;
+  style?: React.CSSProperties;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -15,7 +16,9 @@ const Card: React.FC<CardProps> = ({
   className,
   hover = false,
   premium = false,
-  glass = false
+  glass = false,
+  style,
+  ...props
 }) => {
   const baseClasses = 'rounded-2xl border transition-all duration-300';
   const premiumClasses = premium ? 'card-premium hover:shadow-card-lg' : 'bg-card border-border shadow-card';
@@ -23,13 +26,17 @@ const Card: React.FC<CardProps> = ({
   const glassClasses = glass ? 'glass-effect' : '';
 
   return (
-    <div className={cn(
-      baseClasses,
-      premiumClasses,
-      hoverClasses,
-      glassClasses,
-      className
-    )}>
+    <div 
+      className={cn(
+        baseClasses,
+        premiumClasses,
+        hoverClasses,
+        glassClasses,
+        className
+      )}
+      style={style}
+      {...props}
+    >
       {children}
     </div>
   );

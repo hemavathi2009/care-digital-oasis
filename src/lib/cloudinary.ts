@@ -3,7 +3,7 @@
 export const cloudinaryConfig = {
   cloudName: 'dobktsnix',
   uploadPreset: 'hospital',
-  apiKey: 'your-api-key', // Replace with your Cloudinary API key
+  apiKey: 'your-api-key', // Replace with your Cloudinary API key if needed for signed uploads
 };
 
 export const uploadToCloudinary = async (file: File, folder: string = 'hospital') => {
