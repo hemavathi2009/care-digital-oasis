@@ -1,10 +1,12 @@
-
 import React, { useState } from 'react';
 import Navigation from '../components/organisms/Navigation';
 import Card from '../components/atoms/Card';
 import Button from '../components/atoms/Button';
 import Input from '../components/atoms/Input';
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { toast } from 'sonner';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +18,9 @@ const Contact = () => {
     message: ''
   });
 
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -24,10 +29,69 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Contact form submitted:', formData);
+    setIsSubmitting(true);
+
+    try {
+      // Save contact message to Firebase
+      await addDoc(collection(db, 'contacts'), {
+        ...formData,
+        createdAt: new Date(),
+        status: 'unread'
+      });
+
+      console.log('Contact form submitted successfully:', formData);
+      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      setIsSubmitted(true);
+      
+      // Reset form after successful submission
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <section className="section-padding">
+          <div className="container-hospital">
+            <div className="max-w-2xl mx-auto text-center">
+              <div className="w-24 h-24 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-12 h-12 text-success" />
+              </div>
+              <h1 className="text-4xl font-bold text-foreground mb-4">
+                Message Sent Successfully!
+              </h1>
+              <p className="text-xl text-muted-foreground mb-8">
+                Thank you for contacting us. We'll get back to you within 24 hours.
+              </p>
+              <div className="space-y-4">
+                <Button variant="primary" size="lg" onClick={() => setIsSubmitted(false)}>
+                  Send Another Message
+                </Button>
+                <Button variant="outline" size="lg" onClick={() => window.location.href = '/'}>
+                  Back to Home
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,9 +278,15 @@ const Contact = () => {
                   />
                 </div>
                 
-                <Button variant="primary" size="lg" type="submit" className="w-full">
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
                   <Send className="w-5 h-5 mr-2" />
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </Card>

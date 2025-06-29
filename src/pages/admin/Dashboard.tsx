@@ -60,43 +60,52 @@ const AdminDashboard = () => {
       return;
     }
 
-    // If we reach here and userRole is 'admin', proceed with fetching data
+    // If we reach here and userRole is 'admin', proceed with setting up real-time listeners
     if (userRole === 'admin') {
-      fetchData();
+      setupRealTimeListeners();
     }
   }, [currentUser, userRole, navigate]);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+  const setupRealTimeListeners = () => {
+    setLoading(true);
 
-      // Fetch appointments
-      const appointmentsRef = collection(db, 'appointments');
-      const appointmentsQuery = query(appointmentsRef, orderBy('createdAt', 'desc'));
-      const appointmentsSnapshot = await getDocs(appointmentsQuery);
-      const appointmentsData = appointmentsSnapshot.docs.map(doc => ({
+    // Real-time listener for appointments
+    const appointmentsRef = collection(db, 'appointments');
+    const appointmentsQuery = query(appointmentsRef, orderBy('createdAt', 'desc'));
+    const unsubscribeAppointments = onSnapshot(appointmentsQuery, (snapshot) => {
+      const appointmentsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       setAppointments(appointmentsData);
+      console.log('Real-time appointments update:', appointmentsData.length);
+    }, (error) => {
+      console.error('Error listening to appointments:', error);
+      toast.error('Failed to load appointments');
+    });
 
-      // Fetch contacts
-      const contactsRef = collection(db, 'contacts');
-      const contactsQuery = query(contactsRef, orderBy('createdAt', 'desc'));
-      const contactsSnapshot = await getDocs(contactsQuery);
-      const contactsData = contactsSnapshot.docs.map(doc => ({
+    // Real-time listener for contacts
+    const contactsRef = collection(db, 'contacts');
+    const contactsQuery = query(contactsRef, orderBy('createdAt', 'desc'));
+    const unsubscribeContacts = onSnapshot(contactsQuery, (snapshot) => {
+      const contactsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       setContacts(contactsData);
+      console.log('Real-time contacts update:', contactsData.length);
+    }, (error) => {
+      console.error('Error listening to contacts:', error);
+      toast.error('Failed to load contacts');
+    });
 
-      console.log('Admin data loaded:', { appointments: appointmentsData.length, contacts: contactsData.length });
-    } catch (error) {
-      console.error('Error fetching admin data:', error);
-      toast.error('Failed to load admin data');
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
+
+    // Cleanup function to unsubscribe from listeners
+    return () => {
+      unsubscribeAppointments();
+      unsubscribeContacts();
+    };
   };
 
   const updateAppointmentStatus = async (appointmentId, newStatus) => {
@@ -154,6 +163,10 @@ const AdminDashboard = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     try {
+      // Handle Firestore Timestamp
+      if (dateString?.toDate) {
+        return dateString.toDate().toLocaleDateString();
+      }
       return new Date(dateString).toLocaleDateString();
     } catch {
       return dateString;
@@ -425,9 +438,13 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Manage your hospital operations</p>
+              <p className="text-muted-foreground">Manage your hospital operations - Real-time updates enabled</p>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-muted-foreground">Live Data</span>
+              </div>
               <span className="text-sm text-muted-foreground">
                 Welcome, {currentUser?.email}
               </span>

@@ -1,10 +1,12 @@
-
 import React, { useState } from 'react';
 import Navigation from '../components/organisms/Navigation';
 import Card from '../components/atoms/Card';
 import Button from '../components/atoms/Button';
 import Input from '../components/atoms/Input';
 import { Calendar, Clock, User, Phone, Mail, CheckCircle } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { toast } from 'sonner';
 
 const Appointments = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +22,7 @@ const Appointments = () => {
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const departments = [
     'Cardiology',
@@ -43,10 +46,28 @@ const Appointments = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Appointment booked:', formData);
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      // Save appointment to Firebase
+      await addDoc(collection(db, 'appointments'), {
+        ...formData,
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      console.log('Appointment booked successfully:', formData);
+      toast.success('Appointment booked successfully!');
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      toast.error('Failed to book appointment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -222,9 +243,15 @@ const Appointments = () => {
 
                 {/* Submit Button */}
                 <div className="text-center">
-                  <Button variant="primary" size="lg" type="submit" className="px-12">
+                  <Button 
+                    variant="primary" 
+                    size="lg" 
+                    type="submit" 
+                    className="px-12"
+                    disabled={isSubmitting}
+                  >
                     <Calendar className="w-5 h-5 mr-2" />
-                    Book Appointment
+                    {isSubmitting ? 'Booking...' : 'Book Appointment'}
                   </Button>
                 </div>
               </form>
