@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '../atoms/Button';
-import { Menu, Phone, Calendar, User, Home, Stethoscope, UserCheck, MessageCircle, LogIn, Shield } from 'lucide-react';
+import { Menu, Phone, Calendar, User, Home, Stethoscope, UserCheck, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 const Navigation: React.FC = () => {
@@ -76,18 +76,7 @@ const Navigation: React.FC = () => {
           <div className="hidden lg:flex items-center space-x-4">
             {currentUser ? (
               <>
-                {userRole === 'admin' ? (
-                  <Link to="/admin">
-                    <Button
-                      variant={(isScrolled || !isHomePage) ? 'outline' : 'ghost'}
-                      size="md"
-                      className={!(isScrolled || !isHomePage) ? 'text-white border-white hover:bg-white hover:text-primary' : ''}
-                    >
-                      <Shield className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                ) : (
+                {userRole === 'patient' && (
                   <Link to="/patient-portal">
                     <Button
                       variant={(isScrolled || !isHomePage) ? 'outline' : 'ghost'}
@@ -166,14 +155,7 @@ const Navigation: React.FC = () => {
               <div className="pt-4 space-y-3 border-t border-gray-200">
                 {currentUser ? (
                   <>
-                    {userRole === 'admin' ? (
-                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                        <Button variant="outline" size="md" className="w-full justify-center">
-                          <Shield className="w-4 h-4 mr-2" />
-                          Admin Dashboard
-                        </Button>
-                      </Link>
-                    ) : (
+                    {userRole === 'patient' && (
                       <Link to="/patient-portal" onClick={() => setIsMobileMenuOpen(false)}>
                         <Button variant="outline" size="md" className="w-full justify-center">
                           <User className="w-4 h-4 mr-2" />

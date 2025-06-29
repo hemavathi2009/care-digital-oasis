@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -43,18 +42,28 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Redirect if not logged in
     if (!currentUser) {
-      navigate('/');
+      navigate('/admin/login');
       return;
     }
 
-    if (userRole !== 'admin') {
+    // Redirect if not admin
+    if (userRole && userRole !== 'admin') {
       toast.error('Access denied. Admin privileges required.');
       navigate('/');
       return;
     }
 
-    fetchData();
+    // If userRole is still loading, wait
+    if (userRole === null && currentUser) {
+      return;
+    }
+
+    // If we reach here and userRole is 'admin', proceed with fetching data
+    if (userRole === 'admin') {
+      fetchData();
+    }
   }, [currentUser, userRole, navigate]);
 
   const fetchData = async () => {
