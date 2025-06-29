@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../lib/firebase';
 import Card from '../../components/atoms/Card';
 import Button from '../../components/atoms/Button';
 import Input from '../../components/atoms/Input';
@@ -26,12 +28,49 @@ const AdminLogin = () => {
 
     try {
       setLoading(true);
+      
+      // Login with Firebase
       await login(email, password);
-      toast.success('Login successful!');
+      
+      // Get current user info from auth
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error('Login failed');
+      }
+
+      // Check if user document exists in Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (!userDoc.exists()) {
+        // Create admin user document if it doesn't exist
+        await setDoc(userDocRef, {
+          email: email,
+          role: 'admin',
+          firstName: 'Admin',
+          lastName: 'User',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+        console.log('Admin user document created');
+      } else {
+        // Update existing user to admin role
+        const userData = userDoc.data();
+        if (userData.role !== 'admin') {
+          await setDoc(userDocRef, {
+            ...userData,
+            role: 'admin',
+            updatedAt: new Date()
+          }, { merge: true });
+          console.log('User role updated to admin');
+        }
+      }
+      
+      toast.success('Admin login successful!');
       navigate('/admin');
     } catch (error: any) {
-      console.error('Login error:', error);
-      toast.error(error.message || 'Login failed');
+      console.error('Admin login error:', error);
+      toast.error(error.message || 'Admin login failed');
     } finally {
       setLoading(false);
     }

@@ -109,16 +109,6 @@ const Navigation: React.FC = () => {
               </>
             ) : (
               <>
-                <Link to="/admin/login">
-                  <Button
-                    variant={(isScrolled || !isHomePage) ? 'ghost' : 'ghost'}
-                    size="sm"
-                    className={!(isScrolled || !isHomePage) ? 'text-white hover:bg-white hover:text-primary' : ''}
-                  >
-                    <Shield className="w-4 h-4 mr-1" />
-                    Admin
-                  </Button>
-                </Link>
                 <Button
                   variant={(isScrolled || !isHomePage) ? 'outline' : 'ghost'}
                   size="md"
@@ -197,12 +187,6 @@ const Navigation: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Link to="/admin/login" onClick={() => setIsMobileMenuOpen(false)}>
-                      <Button variant="ghost" size="md" className="w-full justify-center">
-                        <Shield className="w-4 h-4 mr-2" />
-                        Admin Login
-                      </Button>
-                    </Link>
                     <Button variant="outline" size="md" className="w-full justify-center">
                       <Phone className="w-4 h-4 mr-2" />
                       Call Now
