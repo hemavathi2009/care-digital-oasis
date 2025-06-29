@@ -3,7 +3,7 @@ import Navigation from '../components/organisms/Navigation';
 import Card from '../components/atoms/Card';
 import Button from '../components/atoms/Button';
 import Input from '../components/atoms/Input';
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { toast } from 'sonner';
@@ -14,14 +14,13 @@ const Contact = () => {
     lastName: '',
     email: '',
     phone: '',
-    subject: '',
     message: ''
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -34,26 +33,16 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Save contact message to Firebase
+      // Save contact form data to Firebase
       await addDoc(collection(db, 'contacts'), {
         ...formData,
         createdAt: new Date(),
-        status: 'unread'
+        updatedAt: new Date()
       });
 
       console.log('Contact form submitted successfully:', formData);
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      toast.success('Message sent successfully!');
       setIsSubmitted(true);
-      
-      // Reset form after successful submission
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
     } catch (error) {
       console.error('Error submitting contact form:', error);
       toast.error('Failed to send message. Please try again.');
@@ -62,255 +51,220 @@ const Contact = () => {
     }
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <section className="section-padding">
-          <div className="container-hospital">
-            <div className="max-w-2xl mx-auto text-center">
-              <div className="w-24 h-24 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-12 h-12 text-success" />
-              </div>
-              <h1 className="text-4xl font-bold text-foreground mb-4">
-                Message Sent Successfully!
-              </h1>
-              <p className="text-xl text-muted-foreground mb-8">
-                Thank you for contacting us. We'll get back to you within 24 hours.
-              </p>
-              <div className="space-y-4">
-                <Button variant="primary" size="lg" onClick={() => setIsSubmitted(false)}>
-                  Send Another Message
-                </Button>
-                <Button variant="outline" size="lg" onClick={() => window.location.href = '/'}>
-                  Back to Home
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative section-padding bg-gradient-to-br from-primary via-primary/90 to-secondary text-white">
-        <div className="container-hospital">
-          <div className="text-center fade-in-up">
+      {/* Hero Section with Background Image */}
+      <section className="relative section-padding">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.8), rgba(16, 185, 129, 0.8)), url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&h=600&fit=crop')`
+          }}
+        ></div>
+        <div className="relative z-10 container-hospital">
+          <div className="text-center fade-in-up text-white">
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
-              Get in <span className="text-gradient bg-gradient-to-r from-accent to-white bg-clip-text text-transparent">Touch</span>
+              Contact <span className="text-gradient bg-gradient-to-r from-accent to-white bg-clip-text text-transparent">Us</span>
             </h1>
             <p className="text-xl opacity-90 max-w-3xl mx-auto leading-relaxed">
-              Ready to take the next step in your healthcare journey? 
-              Contact us today to schedule your appointment or get answers to your questions.
+              Get in touch with our healthcare team. We're here to answer your questions 
+              and help you with your medical needs.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* Contact Information */}
       <section className="section-padding">
         <div className="container-hospital">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            {/* Contact Info */}
-            <div className="fade-in-up">
-              <h2 className="text-3xl font-bold text-foreground mb-8">
-                Contact Information
-              </h2>
-              
-              <div className="space-y-8">
-                <Card premium className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground mb-2">Phone Numbers</h4>
-                      <div className="space-y-1 text-muted-foreground">
-                        <p>General Inquiries: +1 (555) 123-4567</p>
-                        <p>Emergency Line: 911</p>
-                        <p>Appointments: +1 (555) 123-4568</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card premium className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground mb-2">Email Addresses</h4>
-                      <div className="space-y-1 text-muted-foreground">
-                        <p>General: contact@medicare-plus.com</p>
-                        <p>Appointments: appointments@medicare-plus.com</p>
-                        <p>Support: support@medicare-plus.com</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card premium className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground mb-2">Hospital Address</h4>
-                      <div className="text-muted-foreground">
-                        <p>123 Medical Center Drive</p>
-                        <p>Downtown, NY 10001</p>
-                        <p>United States</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card premium className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Clock className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground mb-2">Operating Hours</h4>
-                      <div className="space-y-1 text-muted-foreground">
-                        <p>Emergency: 24/7</p>
-                        <p>Regular Hours: Mon-Fri 8AM-8PM</p>
-                        <p>Weekend: Sat-Sun 9AM-5PM</p>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            <Card premium className="p-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Phone className="w-8 h-8 text-primary" />
               </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Phone</h3>
+              <p className="text-muted-foreground">+1 (555) 123-4567</p>
+              <p className="text-sm text-muted-foreground mt-1">24/7 Available</p>
+            </Card>
 
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Button variant="primary" size="lg">
-                  <Phone className="w-5 h-5 mr-2" />
-                  Call Now
-                </Button>
-                <Button variant="outline" size="lg">
-                  <MapPin className="w-5 h-5 mr-2" />
-                  Get Directions
-                </Button>
+            <Card premium className="p-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-primary" />
               </div>
-            </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Email</h3>
+              <p className="text-muted-foreground">contact@medicare-plus.com</p>
+              <p className="text-sm text-muted-foreground mt-1">Response within 24h</p>
+            </Card>
 
-            {/* Contact Form */}
-            <Card premium className="p-8 fade-in-up">
-              <h3 className="text-2xl font-semibold text-foreground mb-6 flex items-center">
-                <MessageCircle className="w-6 h-6 mr-3 text-primary" />
-                Send us a Message
-              </h3>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Input
-                    label="First Name"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    placeholder="John"
-                    required
-                  />
-                  <Input
-                    label="Last Name"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    placeholder="Doe"
-                    required
-                  />
-                </div>
-                
-                <Input
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="john@example.com"
-                  icon={<Mail className="w-4 h-4" />}
-                  required
-                />
-                
-                <Input
-                  label="Phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="+1 (555) 123-4567"
-                  icon={<Phone className="w-4 h-4" />}
-                />
+            <Card premium className="p-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <MapPin className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Address</h3>
+              <p className="text-muted-foreground">123 Medical Center Drive</p>
+              <p className="text-sm text-muted-foreground mt-1">Downtown, NY 10001</p>
+            </Card>
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
-                  <select
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    required
-                  >
-                    <option value="">Select a subject</option>
-                    <option value="appointment">Appointment Inquiry</option>
-                    <option value="medical">Medical Question</option>
-                    <option value="billing">Billing Support</option>
-                    <option value="feedback">Feedback</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Message</label>
-                  <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    rows={5}
-                    className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none"
-                    placeholder="Tell us how we can help you..."
-                    required
-                  />
-                </div>
-                
-                <Button 
-                  variant="primary" 
-                  size="lg" 
-                  type="submit" 
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  <Send className="w-5 h-5 mr-2" />
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </Button>
-              </form>
+            <Card premium className="p-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Hours</h3>
+              <p className="text-muted-foreground">Mon-Fri: 8AM-8PM</p>
+              <p className="text-sm text-muted-foreground mt-1">Emergency: 24/7</p>
             </Card>
           </div>
-        </div>
-      </section>
 
-      {/* Map Section */}
-      <section className="section-padding bg-muted/30">
-        <div className="container-hospital">
-          <Card premium className="overflow-hidden">
-            <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="w-16 h-16 text-primary mx-auto mb-4" />
-                <h4 className="text-xl font-semibold text-foreground mb-2">Interactive Map</h4>
-                <p className="text-muted-foreground">
-                  123 Medical Center Drive, Downtown, NY 10001
-                </p>
-                <Button variant="outline" size="md" className="mt-4">
-                  Get Directions
-                </Button>
-              </div>
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Contact Form */}
+            <Card premium className="p-8">
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Send us a Message</h2>
+              
+              {isSubmitted ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-8 h-8 text-success" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Message Sent Successfully!
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    Thank you for contacting us. We'll get back to you within 24 hours.
+                  </p>
+                  <Button variant="primary" onClick={() => setIsSubmitted(false)}>
+                    Send Another Message
+                  </Button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">First Name</label>
+                      <Input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="w-full"
+                        placeholder="John"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">Last Name</label>
+                      <Input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="w-full"
+                        placeholder="Doe"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                    <Input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full"
+                      placeholder="john@example.com"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Phone</label>
+                    <Input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full"
+                      placeholder="+1 (555) 123-4567"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Message</label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full px-4 py-3 rounded-xl border border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none"
+                      placeholder="Tell us how we can help you..."
+                      required
+                    />
+                  </div>
+
+                  <Button variant="primary" size="lg" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </form>
+              )}
+            </Card>
+
+            {/* Map and Additional Info */}
+            <div className="space-y-8">
+              <Card premium className="overflow-hidden">
+                <div className="h-64 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1576067375802-6c5e55e3d83b?w=600&h=300&fit=crop" 
+                    alt="Hospital location map"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-foreground mb-3">Our Location</h3>
+                  <p className="text-muted-foreground">
+                    Conveniently located in downtown area with easy access to public transportation 
+                    and ample parking facilities.
+                  </p>
+                </div>
+              </Card>
+
+              <Card premium className="p-6">
+                <h3 className="text-xl font-semibold text-foreground mb-4">Why Choose Us?</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">Expert Medical Team</h4>
+                      <p className="text-sm text-muted-foreground">Board-certified physicians with years of experience</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">24/7 Emergency Care</h4>
+                      <p className="text-sm text-muted-foreground">Round-the-clock emergency services available</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-white"></div>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground">Modern Facilities</h4>
+                      <p className="text-sm text-muted-foreground">State-of-the-art equipment and comfortable environment</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
             </div>
-          </Card>
+          </div>
         </div>
       </section>
     </div>

@@ -21,10 +21,14 @@ const HeroSection: React.FC = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-secondary">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-[url('/api/placeholder/1920/1080')] bg-cover bg-center opacity-10"></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-secondary/80"></div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.8), rgba(16, 185, 129, 0.8)), url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=1920&h=1080&fit=crop')`
+        }}
+      ></div>
       
       {/* Floating elements */}
       <div className="absolute top-20 left-10 w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm animate-float"></div>
@@ -105,17 +109,13 @@ const HeroSection: React.FC = () => {
           {/* Hero Visual */}
           <div className={`relative ${isVisible ? 'fade-in-up' : 'opacity-0'}`} style={{ animationDelay: '0.3s' }}>
             <div className="relative">
-              {/* Main image placeholder */}
-              <div className="w-full h-96 lg:h-[500px] rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-white/20 to-transparent flex items-center justify-center">
-                  <div className="text-white/50 text-center">
-                    <div className="w-24 h-24 rounded-full bg-white/20 mx-auto mb-4 flex items-center justify-center">
-                      <Calendar className="w-12 h-12" />
-                    </div>
-                    <p className="text-lg font-medium">Professional Healthcare</p>
-                    <p className="text-sm">Trusted by thousands</p>
-                  </div>
-                </div>
+              {/* Main image */}
+              <div className="w-full h-96 lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&h=500&fit=crop" 
+                  alt="Professional medical team"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               {/* Floating cards */}

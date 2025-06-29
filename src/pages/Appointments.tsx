@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navigation from '../components/organisms/Navigation';
 import Card from '../components/atoms/Card';
@@ -105,10 +106,16 @@ const Appointments = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative section-padding bg-gradient-to-br from-primary via-primary/90 to-secondary text-white">
-        <div className="container-hospital">
-          <div className="text-center fade-in-up">
+      {/* Hero Section with Background Image */}
+      <section className="relative section-padding">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.9), rgba(16, 185, 129, 0.9)), url('https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=1920&h=600&fit=crop')`
+          }}
+        ></div>
+        <div className="relative z-10 container-hospital">
+          <div className="text-center fade-in-up text-white">
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
               Book an <span className="text-gradient bg-gradient-to-r from-accent to-white bg-clip-text text-transparent">Appointment</span>
             </h1>
@@ -260,27 +267,36 @@ const Appointments = () => {
         </div>
       </section>
 
-      {/* Emergency Contact */}
+      {/* Emergency Contact with Image */}
       <section className="section-padding bg-muted/30">
         <div className="container-hospital">
-          <Card premium className="p-8 text-center">
-            <h3 className="text-2xl font-semibold text-foreground mb-4">
-              Need Immediate Medical Attention?
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              For medical emergencies, please call our emergency hotline or visit our emergency department.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="primary" size="lg">
-                <Phone className="w-5 h-5 mr-2" />
-                Emergency: 911
-              </Button>
-              <Button variant="outline" size="lg">
-                <Clock className="w-5 h-5 mr-2" />
-                24/7 Support
-              </Button>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <img 
+                src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&h=400&fit=crop" 
+                alt="Emergency medical care"
+                className="w-full h-80 object-cover rounded-3xl shadow-xl"
+              />
             </div>
-          </Card>
+            <Card premium className="p-8">
+              <h3 className="text-2xl font-semibold text-foreground mb-4">
+                Need Immediate Medical Attention?
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                For medical emergencies, please call our emergency hotline or visit our emergency department.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button variant="primary" size="lg">
+                  <Phone className="w-5 h-5 mr-2" />
+                  Emergency: 911
+                </Button>
+                <Button variant="outline" size="lg">
+                  <Clock className="w-5 h-5 mr-2" />
+                  24/7 Support
+                </Button>
+              </div>
+            </Card>
+          </div>
         </div>
       </section>
     </div>

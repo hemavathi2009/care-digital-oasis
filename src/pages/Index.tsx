@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from '../components/organisms/Navigation';
@@ -66,7 +67,8 @@ const Index = () => {
       experience: '15+ years',
       rating: 4.9,
       availability: 'Available Today',
-      bio: 'Leading expert in cardiovascular medicine with extensive experience in interventional cardiology.'
+      bio: 'Leading expert in cardiovascular medicine with extensive experience in interventional cardiology.',
+      image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop&crop=face'
     },
     {
       id: '2',
@@ -75,7 +77,8 @@ const Index = () => {
       experience: '12+ years',
       rating: 4.8,
       availability: 'Available Tomorrow',
-      bio: 'Specialized in treating complex neurological disorders with a focus on patient-centered care.'
+      bio: 'Specialized in treating complex neurological disorders with a focus on patient-centered care.',
+      image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop&crop=face'
     },
     {
       id: '3',
@@ -84,7 +87,8 @@ const Index = () => {
       experience: '10+ years',
       rating: 4.9,
       availability: 'Available This Week',
-      bio: 'Expert in advanced eye surgeries and comprehensive vision care for all ages.'
+      bio: 'Expert in advanced eye surgeries and comprehensive vision care for all ages.',
+      image: 'https://images.unsplash.com/photo-1594824363067-0e39f2c90c6a?w=300&h=300&fit=crop&crop=face'
     }
   ];
 
@@ -139,8 +143,68 @@ const Index = () => {
         </div>
       </section>
 
+      {/* About Section with Image */}
+      <section className="section-padding">
+        <div className="container-hospital">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="fade-in-up">
+              <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+                Excellence in <span className="text-gradient">Healthcare</span>
+              </h2>
+              <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                For over 25 years, MediCare+ has been at the forefront of medical innovation, 
+                providing compassionate care and cutting-edge treatments to our community.
+              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                  </div>
+                  <span className="text-muted-foreground">State-of-the-art medical equipment</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                  </div>
+                  <span className="text-muted-foreground">Board-certified specialists</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                  </div>
+                  <span className="text-muted-foreground">24/7 emergency care services</span>
+                </div>
+              </div>
+              <Button variant="primary" size="lg">
+                Learn More About Us
+              </Button>
+            </div>
+            <div className="fade-in-up">
+              <div className="relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=600&h=500&fit=crop" 
+                  alt="Modern hospital facility"
+                  className="w-full h-96 object-cover rounded-3xl shadow-2xl"
+                />
+                <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-6 shadow-xl">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-success" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground">Safety First</div>
+                      <div className="text-sm text-muted-foreground">Accredited Facility</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
-      <section id="services" className="section-padding">
+      <section id="services" className="section-padding bg-muted/30">
         <div className="container-hospital">
           <div className="text-center mb-16 fade-in-up">
             <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
@@ -173,7 +237,7 @@ const Index = () => {
       </section>
 
       {/* Doctors Section */}
-      <section id="doctors" className="section-padding bg-muted/30">
+      <section id="doctors" className="section-padding">
         <div className="container-hospital">
           <div className="text-center mb-16 fade-in-up">
             <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
@@ -202,6 +266,59 @@ const Index = () => {
                 View All Doctors
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Facilities Section */}
+      <section className="section-padding bg-muted/30">
+        <div className="container-hospital">
+          <div className="text-center mb-16 fade-in-up">
+            <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              World-Class <span className="text-gradient">Facilities</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Our modern facilities are equipped with the latest medical technology 
+              to provide the best possible care for our patients.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card premium hover className="overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=400&h=250&fit=crop" 
+                alt="Operating Room"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-foreground mb-3">Advanced Operating Rooms</h3>
+                <p className="text-muted-foreground">State-of-the-art surgical suites with the latest technology.</p>
+              </div>
+            </Card>
+
+            <Card premium hover className="overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop" 
+                alt="ICU Ward"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-foreground mb-3">Intensive Care Unit</h3>
+                <p className="text-muted-foreground">24/7 monitoring with advanced life support systems.</p>
+              </div>
+            </Card>
+
+            <Card premium hover className="overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=400&h=250&fit=crop" 
+                alt="Emergency Department"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-foreground mb-3">Emergency Department</h3>
+                <p className="text-muted-foreground">Rapid response team available around the clock.</p>
+              </div>
+            </Card>
           </div>
         </div>
       </section>
